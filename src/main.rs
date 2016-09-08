@@ -5,15 +5,19 @@ mod help;
 mod replace;
 
 use clipboard_win::{get_clipboard_string, set_clipboard};
-
-
 use replace::Replace;
-use std::env;
+use std::env::{self};
 
 fn main() {
+    // |fn|qrg1:arg2:arg3
     println!(" \nUse -help: argumnet for more info.\n" );
-    let attr = &env::args().nth(1).unwrap();
+    let args: Vec<String> = env::args().skip(1).filter(|x|x.starts_with("-")).collect(); 
+    for argument in args {
+        println!("{}", argument);
+    }
 
+
+/*    
     match get_clipboard_string() {
         Err(e) => println!("{}", e),
         Ok(v) => {                       
@@ -29,6 +33,6 @@ fn main() {
             }
         },
     };
-
+*/
 
 }

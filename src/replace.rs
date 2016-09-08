@@ -2,13 +2,13 @@ use help;
 use regex::{Error, Regex};
 
 #[derive(Debug)]
-pub struct Replace <'a> {
+pub struct Replace<'a> {
     pub html: String,
     args: Vec<(&'a str, Vec<&'a str>)>,
 }
 
-impl <'a> Replace <'a> {
-    pub fn new(html: String, argument: &'a str) -> Replace <'a> {
+impl <'a> Replace<'a> {
+    pub fn new(html: String, argument: &'a str) -> Replace<'a> {
         Replace {
             html: html,
             args: Replace::parse_argument(argument),
@@ -16,9 +16,11 @@ impl <'a> Replace <'a> {
     } 
 
     fn parse_argument(arg: &str) -> Vec<(&str, Vec<&str>)>  {
+        
         let attr_vec: Vec<&str> = arg.split("-").skip(1).collect();
         let mut func_values = Vec::new();
         for item in attr_vec {
+            println!("{}", item);
             func_values.push(Replace::argument(item));
         }
         func_values
@@ -36,7 +38,7 @@ impl <'a> Replace <'a> {
             let function_name = argument.0;
             match function_name {
                 "pbr" => try!(self.p_to_br()),
-                "ret" => try!(self.remove_empty_tag()),
+                "rets" => try!(self.remove_empty_tags()),
 
                 "help" => print!("{}", help::HELP),
                 _ => print!("Unsupported argument {}", function_name),
@@ -62,7 +64,7 @@ impl <'a> Replace <'a> {
         String::new()
     }
 
-    fn remove_empty_tag(&mut self)  -> Result<(), Error> {
+    fn remove_empty_tags(&mut self)  -> Result<(), Error> {
         let re_string = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
         let re = try!(Regex::new(re_string));
         self.html = re.replace_all(&self.html, "");
