@@ -9,9 +9,12 @@ use replace::Replace;
 use std::env::{self};
 
 fn main() {
-    // |fn|qrg1:arg2:arg3
+    // [fn]v1:v2:v3
     println!(" \nUse -help: argumnet for more info.\n" );
-    let args: Vec<String> = env::args().skip(1).filter(|x|x.starts_with("-")).collect(); 
+    let args: Vec<String> = env::args()
+                                .skip(1)
+                                .filter(|x|x.starts_with("-"))
+                                .collect(); 
     for argument in args {
         println!("{}", argument);
     }
