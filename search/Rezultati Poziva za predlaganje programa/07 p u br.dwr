@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<dwquery>
+  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
+  <find>
+    <qtag qname="p" qconvertednls="true"></qtag>
+  </find>
+  <replace action="stripTag" param1="style" param2="_blank"/>
+</dwquery>

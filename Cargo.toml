@@ -4,3 +4,8 @@ version = "0.1.0"
 authors = ["skuhinek@gmail.com <skuhinek@gmail.com>"]
 
 [dependencies]
+regex = "0.1.75"
+clipboard-win = "1.8.0"
+
+[profile.release]
+lto = true
