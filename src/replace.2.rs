@@ -7,36 +7,29 @@ pub struct Replace<'a> {
     args: Vec<(&'a str, Vec<&'a str>)>,
 }
 
-impl<'a> Replace<'a> {
-    pub fn new(html: String, argument: Vec<&'a str>) -> Replace<'a> {
+impl <'a> Replace<'a> {
+    pub fn new(html: String, argument: &'a str) -> Replace<'a> {
         Replace {
             html: html,
-            args: Replace::parse_arguments(argument),
+            args: Replace::parse_argument(argument),
         }
     } 
-    
-    fn parse_arguments(args: Vec<&'a str>) -> Vec<(&'a str, Vec<&'a str>)> {
-        let mut arguments = Vec::new();
-        for arg in args {
-            arguments.push(Replace::parse_argument(&arg));
+
+    fn parse_argument(arg: &str) -> Vec<(&str, Vec<&str>)>  {
+        
+        let attr_vec: Vec<&str> = arg.split("-").skip(1).collect();
+        let mut func_values = Vec::new();
+        for item in attr_vec {
+            println!("{}", item);
+            func_values.push(Replace::argument(item));
         }
-        arguments
+        func_values
     }
 
-    fn parse_argument(arg: &'a str) -> (&str, Vec<&'a str>)  {
-        
-        let argument_split: Vec<&str> = arg.split(":").collect();
-        let function_name = argument_split[0];
-        
-        //println!("\t{}", function_name);
-        
-        let mut input_values = Vec::new();
-        for item in &argument_split[1..] {
-            
-            //println!("\t{}", item);
-            
-            input_values.push(*item);
-        }
+    fn argument(attr: &str) ->(&str, Vec<&str>) {
+        let attribute: Vec<&str>  = attr.split(":").collect();     
+        let function_name = attribute[0].clone();
+        let input_values: Vec<&str> = attribute[1].trim().split(" ").collect();//::<Vec<String>>();   
         (function_name, input_values)
     }
 
@@ -44,11 +37,11 @@ impl<'a> Replace<'a> {
         for argument in self.args.clone() {
             let function_name = argument.0;
             match function_name {
-                "-pbr" => try!(self.p_to_br()),
-                "-rets" => try!(self.remove_empty_tags()),
+                "pbr" => try!(self.p_to_br()),
+                "rets" => try!(self.remove_empty_tags()),
 
-                "-help" => print!("{}", help::HELP),
-                _ => println!("Unsupported argument {}", function_name),
+                "help" => print!("{}", help::HELP),
+                _ => print!("Unsupported argument {}", function_name),
             };
         }
         Ok(())
