@@ -1,22 +1,31 @@
 pub const HELP: &'static str = "
 
-    kod funkcija koje zamjenjuju jedan string sa drugim koriste se 
-    posebni stringovi za:
+    Kod funkcija koje zamjenjuju jedan string sa drugim koriste se 
+    specijalni znakovi za:
       razmak,        [SPACE] 
       prazan string, [EMPTY] 
 
 - funkcije ---------------------------------------------------------
-    pbr - zamjenjuje p tag sa br tagom.
+    -pbr (p to br)
+      Zamjenjuje p tag sa br tagom.
         upotreba: -pbr
 
-    rets - uklanja prazne tagove (p|h1|h2|div)
+    -rets (remove empty tags) 
+      Uklanja prazne tagove (p|h1|h2|div)
         upotreba: -rets
-    
-    -repl - zamjenjuje jedan string sa drugim.
+
+    -repl (replace)
+      Zamjenjuje jedan string sa drugim.
       Razmaci u stringu moraju se zamijeniti sa [SPACE]
         upotreba: -repl::from::to     
 
-    -remd - zamjenjuje ponavljauće znakove.
+    -replre (replace regex)
+      Zamjenjuje string koji odgovara regularnom izrazu
+      Paziti na specijalne znakove.
+        upotreba: -replre::regex::to
+
+    -remd (remove double)
+      Zamjenjuje ponavljauće znakove.
       Za uklanjanje ponavljajućih razmaka korisiti [SPACE]
         upotreba: -remd::ponavljajući_znak
 ";

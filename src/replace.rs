@@ -53,7 +53,9 @@ impl<'a, 'b> Replace<'a, 'b> {
                 // mjenja p tag u br
                 "-pbr" => try!(self.p_to_br()),
                 // mijenja jedan string u drugi
-                "-repl" =>  self.clipboard = self.replace_string(argument.1[0], argument.1[1]),
+                "-repl" => self.replace_string(argument.1[0], argument.1[1]),
+                // mijenja string koji odgovara regularnom izrazu
+                "-replre" => try!(self.replace_string_regex(argument.1[0], argument.1[1])),
                 // uklanja ponavljajuće stringove, slova...
                 "-remd" => self.remove_double(argument.1[0]),
                 // uklanja prazne tagove (p|h1|h2|div)
@@ -67,10 +69,20 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     }
 
-    fn replace_string(&self, from: &'a str, to: &'a str) -> String {
+    fn replace_string(&mut self, from: &'a str, to: &'a str) {
         let from = self.replace_special_arg(from);
         let to = self.replace_special_arg(to);
-        self.clipboard.replace(&from, &to)
+        self.clipboard = self.clipboard.replace(&from, &to);
+    }
+
+    fn replace_string_regex(&mut self, regex: &'a str, to: &'a str) -> Result<(), Error> {
+        let regex = self.replace_special_arg(regex);
+        //ovdje nisma uklanjao specijalne znakove u "to" jer je javljao gešku
+        let re = try!(Regex::new(&regex));
+        self.clipboard = re.replace_all(&self.clipboard, to);
+        //zato su specialni znakovu uklonjeni ovdje
+        self.clipboard = self.replace_special_arg(&self.clipboard);
+        Ok(())
     }
 
     fn replace_special_arg(&self, value: &'b str) -> String {
