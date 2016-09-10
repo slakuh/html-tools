@@ -1,23 +1,29 @@
+use constants;
 use help;
 use regex::{Error, Regex};
 
 #[derive(Debug)]
-pub struct Replace<'a> {
-    pub html: String,
+pub struct Replace<'a, 'b> {
+    pub clipboard: String,
     args: Vec<(&'a str, Vec<&'a str>)>,
+    str_empty: &'b str,
+    str_space: &'b str,
 }
 
-impl<'a> Replace<'a> {
-    pub fn new(html: String, argument: Vec<&'a str>) -> Replace<'a> {
+impl<'a, 'b> Replace<'a, 'b> {
+    pub fn new(clipboard: String, argument: Vec<&'a str>) -> Replace<'a, 'b> {
         Replace {
-            html: html,
+            clipboard: clipboard,
             args: Replace::parse_arguments(argument),
+            str_empty: "",
+            str_space: " ",
         }
     } 
     
     fn parse_arguments(args: Vec<&'a str>) -> Vec<(&'a str, Vec<&'a str>)> {
         let mut arguments = Vec::new();
         for arg in args {
+
             arguments.push(Replace::parse_argument(&arg));
         }
         arguments
@@ -25,17 +31,17 @@ impl<'a> Replace<'a> {
 
     fn parse_argument(arg: &'a str) -> (&str, Vec<&'a str>)  {
         
-        let argument_split: Vec<&str> = arg.split(":").collect();
+        let argument_split: Vec<&str> = arg.split(constants::ARG_VAL_SEPARATOR).collect();
         let function_name = argument_split[0];
         
-        //println!("\t{}", function_name);
+        
         
         let mut input_values = Vec::new();
-        for item in &argument_split[1..] {
+        for vals in &argument_split[1..] {
             
-            //println!("\t{}", item);
             
-            input_values.push(*item);
+            
+            input_values.push(*vals);
         }
         (function_name, input_values)
     }
@@ -44,37 +50,64 @@ impl<'a> Replace<'a> {
         for argument in self.args.clone() {
             let function_name = argument.0;
             match function_name {
+                // mjenja p tag u br
                 "-pbr" => try!(self.p_to_br()),
-                "-rets" => try!(self.remove_empty_tags()),
+                // mijenja jedan string u drugi
+                "-repl" =>  self.clipboard = self.replace_string(argument.1[0], argument.1[1]),
+                // uklanja ponavljajuće stringove, slova...
+                "-remd" => self.remove_double(argument.1[0]),
+                // uklanja prazne tagove (p|h1|h2|div)
+                "-rets" => try!(self.remove_empty_tags()),    
 
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
         }
+        
         Ok(())
     }
+
+    fn replace_string(&self, from: &'a str, to: &'a str) -> String {
+        let from = self.replace_special_arg(from);
+        let to = self.replace_special_arg(to);
+        self.clipboard.replace(&from, &to)
+    }
+
+    fn replace_special_arg(&self, value: &'b str) -> String {
+        let mut value = value.replace(constants::SPECIAL_SPACE, self.str_space);
+        value = value.replace(constants::SPECIAL_EMPTY, self.str_empty);
+        value      
+    }
+
+    fn remove_double(&mut self, val: &'a str) {        
+        let val = &self.replace_special_arg(val);        
+        let double = val.to_string() + val;        
+        while self.clipboard.contains(&double) {
+           self.clipboard = self.clipboard.replace(&double, val);
+        }
+    }    
 
     fn p_to_br(&mut self) -> Result<(), Error> {
         let re_p1 = r"<[pP].*?>";
         let re = try!(Regex::new(re_p1));
-        self.html = re.replace_all(&self.html,"");
+        self.clipboard = re.replace_all(&self.clipboard,"");
 
         let re_p2 = r"</[pP]>";
         let re = try!(Regex::new(re_p2));
-        self.html = re.replace_all(&self.html,"<br />");
+        self.clipboard = re.replace_all(&self.clipboard,"<br />");
 
         Ok(())
     } 
 
 
     fn re_tag(tag: &str) -> String {
-        String::new()
+        unimplemented!()
     }
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
         let re_string = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
         let re = try!(Regex::new(re_string));
-        self.html = re.replace_all(&self.html, "");
+        self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
     }
 

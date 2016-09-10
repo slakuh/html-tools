@@ -1,6 +1,7 @@
 extern crate regex;
 extern crate clipboard_win;
 
+mod constants;
 mod help;
 mod replace;
 
@@ -13,7 +14,7 @@ fn main() {
     println!(" \nUse -help: argumnet for more info.\n" );
     let args_string: Vec<String> = env::args()
                                 .skip(1)
-                                .filter(|x|x.starts_with("-"))
+                                .filter(|x|x.starts_with(constants::ARG_PREFFIX))
                                 .collect(); 
 
     let mut args: Vec<&str> = Vec::new();
@@ -28,7 +29,7 @@ fn main() {
             match rep.run_functions() {
                 Err(e) => print!("{}", e),
                 Ok(_) => {
-                    match set_clipboard(&rep.html) {
+                    match set_clipboard(&rep.clipboard) {
                         Err(e) => println!("{}", e),
                         Ok(_) => (),
                     };
