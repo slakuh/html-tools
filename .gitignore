@@ -5,4 +5,3 @@
 # More information here http://doc.crates.io/guide.html#cargotoml-vs-cargolock
 search/
 Cargo.lock
-
