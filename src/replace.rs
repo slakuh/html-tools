@@ -32,17 +32,12 @@ impl<'a, 'b> Replace<'a, 'b> {
     fn parse_argument(arg: &'a str) -> (&str, Vec<&'a str>)  {
         
         let argument_split: Vec<&str> = arg.split(constants::ARG_VAL_SEPARATOR).collect();
-        let function_name = argument_split[0];
-        
-        
-        
+        let function_name = argument_split[0];        
         let mut input_values = Vec::new();
         for vals in &argument_split[1..] {
-            
-            
-            
             input_values.push(*vals);
         }
+        
         (function_name, input_values)
     }
 
@@ -60,7 +55,7 @@ impl<'a, 'b> Replace<'a, 'b> {
                 "-remd" => self.remove_double(argument.1[0]),
                 // uklanja prazne tagove (p|h1|h2|div)
                 "-rets" => try!(self.remove_empty_tags()),    
-
+                "-raa" => try!(self.remove_atributes_all()),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
@@ -117,9 +112,20 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
-        let re_string = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
-        let re = try!(Regex::new(re_string));
+        let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
+        let re = try!(Regex::new(re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
+        Ok(())
+    }
+
+    fn remove_atributes_all(&mut self) -> Result<(), Error> {
+        let re_str = r"<(\w+)\s+.*?>"; //r"<(\w+).*?>";
+        let re = try!(Regex::new(re_str));
+        for capture in &mut re.captures_iter(&self.clipboard.clone()) {
+            //println!("{:?}", capture.at(1));
+            let tag = "<".to_string() + capture.at(1).unwrap() + ">";
+            self.clipboard = self.clipboard.replace(capture.at(0).unwrap(), &tag);
+        }
         Ok(())
     }
 

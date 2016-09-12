@@ -1,5 +1,6 @@
-extern crate regex;
 extern crate clipboard_win;
+extern crate regex;
+extern crate user;
 
 mod constants;
 mod help;
@@ -10,7 +11,9 @@ use replace::Replace;
 use std::env::{self};
 
 fn main() {
-    // [fn]v1:v2:v3
+
+    user::user();    
+
     println!(" \nUse -help: argumnet for more info.\n" );
     let args_string: Vec<String> = env::args()
                                 .skip(1)

@@ -20,12 +20,16 @@ pub const HELP: &'static str = "
         upotreba: -repl::from::to     
 
     -replre (replace regex)
-      Zamjenjuje string koji odgovara regularnom izrazu
+      Zamjenjuje string koji odgovara regularnom izrazu.
       Paziti na specijalne znakove.
         upotreba: -replre::regex::to
 
     -remd (remove double)
-      Zamjenjuje ponavljauće znakove.
+      Zamjenjuje ponavljajuće znakove.
       Za uklanjanje ponavljajućih razmaka korisiti [SPACE]
         upotreba: -remd::ponavljajući_znak
+    
+    -raa (remove attributes all)
+      Čisti tagove od atributa
+        upotreba: -raa
 ";
