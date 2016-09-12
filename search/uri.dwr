@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find>
-    <qtext qname="(\b([\d\w\.\/\+\-\?\:]*)((ht|f)tp(s|)\:\/\/|[\d\d\d|\d\d]\.[\d\d\d|\d\d]\.|www\.|\.tv|\.ac|\.com|\.edu|\.gov|\.int|\.mil|\.net|\.org|\.biz|\.info|\.name|\.pro|\.museum|\.co)([\d\w\.\/\%\+\-\=\&amp;\?\:\\\&quot;\'\,\|\~\;]*)\b)" qraw="true"></qtext>
-  </find>
-  <replace action="replaceText" param1="<a href=&quot;$1&quot;>$1</a>" param2=""/>
-</dwquery>

@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="true" useregexp="false" wholeword="false" />
-  <find>
-    <qtag qname="h3" qconvertednls="true"></qtag>
-  </find>
-  <replace action="changeTag" param1="span" param2="naslvijesti"/>
-</dwquery>

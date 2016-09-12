@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find searchmode="document">
-    <qtext qname="(\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b)" qraw="true"></qtext>
-  </find>
-  <replace action="replaceText" param1="<a href=&quot;mailto:$1&quot;>$1</a>" param2=""/>
-</dwquery>

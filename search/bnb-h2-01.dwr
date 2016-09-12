@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find>
-    <qtext qname="&lt;h2&gt;" qraw="true"></qtext>
-  </find>
-  <replace action="replaceText" param1="<p style=&quot;text-transform:uppercase; font-weight:bold;&quot;>" param2=""/>
-</dwquery>

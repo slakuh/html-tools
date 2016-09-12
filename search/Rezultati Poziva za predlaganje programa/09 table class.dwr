@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find>
-    <qtag qname="table" qconvertednls="true"></qtag>
-  </find>
-  <replace action="setAttribute" param1="class" param2="table-style-1"/>
-</dwquery>

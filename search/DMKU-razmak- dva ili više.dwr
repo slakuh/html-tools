@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find>
-    <qtext qname="\s{2,}" qraw="true"></qtext>
-  </find>
-  <replace action="replaceText" param1=" " param2=""/>
-</dwquery>

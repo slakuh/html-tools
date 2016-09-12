@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="false" useregexp="true" wholeword="false" />
-  <find>
-    <qtag qname="a" qconvertednls="true"></qtag>
-  </find>
-  <replace action="setAttribute" param1="target" param2="_blank"/>
-</dwquery>

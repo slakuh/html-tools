@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<dwquery>
-  <queryparams matchcase="false" ignorewhitespace="true" useregexp="false" wholeword="false" />
-  <find searchmode="document">
-    <qtag qname="span" qconvertednls="true"></qtag>
-  </find>
-  <replace action="setAttribute" param1="class" param2="naslrubrike"/>
-</dwquery>
