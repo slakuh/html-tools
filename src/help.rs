@@ -14,20 +14,20 @@ pub const HELP: &'static str = "
       Uklanja prazne tagove (p|h1|h2|div)
         upotreba: -rets
 
-    -repl (replace)
+    -r (replace)
       Zamjenjuje jedan string sa drugim.
       Razmaci u stringu moraju se zamijeniti sa [SPACE]
-        upotreba: -repl::from::to     
+        upotreba: -r::from::to     
 
-    -replre (replace regex)
+    -rre (replace regex)
       Zamjenjuje string koji odgovara regularnom izrazu.
       Paziti na specijalne znakove.
-        upotreba: -replre::regex::to
+        upotreba: -rre::regex::to
 
-    -remd (remove double)
-      Zamjenjuje ponavljajuće znakove.
+    -rd (remove double)
+      Zamjenjuje ponavljajuće/višestruke znakove.
       Za uklanjanje ponavljajućih razmaka korisiti [SPACE]
-        upotreba: -remd::ponavljajući_znak
+        upotreba: -rd::ponavljajući_znak
     
     -raa (remove attributes all)
       Čisti tagove od atributa

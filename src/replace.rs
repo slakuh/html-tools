@@ -48,13 +48,14 @@ impl<'a, 'b> Replace<'a, 'b> {
                 // mjenja p tag u br
                 "-pbr" => try!(self.p_to_br()),
                 // mijenja jedan string u drugi
-                "-repl" => self.replace_string(argument.1[0], argument.1[1]),
+                "-r" => self.replace_string(argument.1[0], argument.1[1]),
                 // mijenja string koji odgovara regularnom izrazu
-                "-replre" => try!(self.replace_string_regex(argument.1[0], argument.1[1])),
+                "-rre" => try!(self.replace_string_regex(argument.1[0], argument.1[1])),
                 // uklanja ponavljajuće stringove, slova...
-                "-remd" => self.remove_double(argument.1[0]),
+                "-rd" => self.remove_double(argument.1[0]),
                 // uklanja prazne tagove (p|h1|h2|div)
-                "-rets" => try!(self.remove_empty_tags()),    
+                "-rets" => try!(self.remove_empty_tags()),
+                // čisti tagove od atributa    
                 "-raa" => try!(self.remove_atributes_all()),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
@@ -121,7 +122,7 @@ impl<'a, 'b> Replace<'a, 'b> {
     fn remove_atributes_all(&mut self) -> Result<(), Error> {
         let re_str = r"<(\w+)\s+.*?>"; //r"<(\w+).*?>";
         let re = try!(Regex::new(re_str));
-        for capture in &mut re.captures_iter(&self.clipboard.clone()) {
+        for capture in re.captures_iter(&self.clipboard.clone()) {
             //println!("{:?}", capture.at(1));
             let tag = "<".to_string() + capture.at(1).unwrap() + ">";
             self.clipboard = self.clipboard.replace(capture.at(0).unwrap(), &tag);
