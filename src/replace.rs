@@ -23,7 +23,6 @@ impl<'a, 'b> Replace<'a, 'b> {
     fn parse_arguments(args: Vec<&'a str>) -> Vec<(&'a str, Vec<&'a str>)> {
         let mut arguments = Vec::new();
         for arg in args {
-
             arguments.push(Replace::parse_argument(&arg));
         }
         arguments
@@ -36,8 +35,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         let mut input_values = Vec::new();
         for vals in &argument_split[1..] {
             input_values.push(*vals);
-        }
-        
+        }        
         (function_name, input_values)
     }
 
@@ -57,11 +55,12 @@ impl<'a, 'b> Replace<'a, 'b> {
                 "-rets" => try!(self.remove_empty_tags()),
                 // čisti tagove od atributa    
                 "-raa" => try!(self.remove_atributes_all()),
+                // uklanja tag
+                "-rt" => try!(self.remove_tag(argument.1[0])),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
-        }
-        
+        }        
         Ok(())
     }
 
@@ -80,7 +79,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.replace_special_arg(&self.clipboard);
         Ok(())
     }
-
+    
     fn replace_special_arg(&self, value: &'b str) -> String {
         let mut value = value.replace(constants::SPECIAL_SPACE, self.str_space);
         value = value.replace(constants::SPECIAL_EMPTY, self.str_empty);
@@ -109,7 +108,20 @@ impl<'a, 'b> Replace<'a, 'b> {
 
 
     fn re_tag(tag: &str) -> String {
-        unimplemented!()
+        if tag.len() > 0 {
+            tag.to_lowercase() + "|" + &tag.to_uppercase()
+        } else {
+            String::new()
+        }
+    }
+
+    fn remove_tag(&mut self, tag: &'a str) -> Result<(), Error> {
+        let re_string = "</?(".to_string() + &Replace::re_tag(tag)+ ").*?>";
+        println!("{:?}", re_string);
+        let re = try!(Regex::new(&re_string));
+        self.clipboard = re.replace_all(&self.clipboard, "");
+        Ok(())
+
     }
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
@@ -119,12 +131,15 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     }
 
+    // TODO: moguć višestruki nepotrebni string.replace(), provjeriti  
     fn remove_atributes_all(&mut self) -> Result<(), Error> {
-        let re_str = r"<(\w+)\s+.*?>"; //r"<(\w+).*?>";
+        let re_str = r"<(\w+)\s+.*?>";
         let re = try!(Regex::new(re_str));
         for capture in re.captures_iter(&self.clipboard.clone()) {
-            //println!("{:?}", capture.at(1));
             let tag = "<".to_string() + capture.at(1).unwrap() + ">";
+            // TODO: moguć višestruki nepotrebni string.replace(),  
+            // jer kad jednom izmijeni onda izmjeni sve, pa ne treba ponovo pokušavati
+            // radi ali nije optimalno
             self.clipboard = self.clipboard.replace(capture.at(0).unwrap(), &tag);
         }
         Ok(())

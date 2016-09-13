@@ -32,4 +32,8 @@ pub const HELP: &'static str = "
     -raa (remove attributes all)
       Čisti tagove od atributa
         upotreba: -raa
+
+    -rt (remove tag)
+      Uklanja tag
+        upotreba: -rt::tag
 ";
