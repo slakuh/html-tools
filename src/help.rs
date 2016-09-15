@@ -3,7 +3,10 @@ pub const HELP: &'static str = "
     Kod funkcija koje zamjenjuju jedan string sa drugim koriste se 
     specijalni znakovi za:
       razmak,        [SPACE] 
-      prazan string, [EMPTY] 
+      prazan string, [EMPTY]
+      novi red,      [NL]
+      return,        [RETURN]
+      tab,           [TAB]
 
 - funkcije ---------------------------------------------------------
     -pbr (p to br)
@@ -30,10 +33,15 @@ pub const HELP: &'static str = "
         upotreba: -rd::ponavljajući_znak
     
     -raa (remove attributes all)
-      Čisti tagove od atributa
+      Čisti tagove od atributa.
         upotreba: -raa
 
     -rt (remove tag)
-      Uklanja tag
+      Uklanja tag.
         upotreba: -rt::tag
+
+    -ct (change tag)
+      Mjenja jedan tag u drugi.
+        upotreba: -rt::from::to, -rt::div::p
+
 ";

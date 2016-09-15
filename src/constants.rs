@@ -5,3 +5,6 @@ pub const ARG_VAL_SEPARATOR: &'static str = "::";
 
 pub const SPECIAL_SPACE: &'static str = "[SPACE]";
 pub const SPECIAL_EMPTY: &'static str = "[EMPTY]";
+pub const SPECIAL_NEW_LINE: &'static str = "[NL]";
+pub const SPECIAL_RETURN: &'static str = "[RETURN]";
+pub const SPECIAL_TAB: &'static str = "[TAB]";

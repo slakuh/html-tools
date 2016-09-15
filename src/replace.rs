@@ -8,6 +8,9 @@ pub struct Replace<'a, 'b> {
     args: Vec<(&'a str, Vec<&'a str>)>,
     str_empty: &'b str,
     str_space: &'b str,
+    str_new_line: &'b str,
+    str_return: &'b str,
+    str_tab: &'b str,
 }
 
 impl<'a, 'b> Replace<'a, 'b> {
@@ -17,6 +20,9 @@ impl<'a, 'b> Replace<'a, 'b> {
             args: Replace::parse_arguments(argument),
             str_empty: "",
             str_space: " ",
+            str_new_line: "\n",
+            str_return: "\r",
+            str_tab: "\t",
         }
     } 
     
@@ -57,6 +63,8 @@ impl<'a, 'b> Replace<'a, 'b> {
                 "-raa" => try!(self.remove_atributes_all()),
                 // uklanja tag
                 "-rt" => try!(self.remove_tag(argument.1[0])),
+                // Mjenja jedan tag u drugi
+                "-ct" => self.change_tag(argument.1[0], argument.1[1]),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
@@ -70,6 +78,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.clipboard.replace(&from, &to);
     }
 
+
     fn replace_string_regex(&mut self, regex: &'a str, to: &'a str) -> Result<(), Error> {
         let regex = self.replace_special_arg(regex);
         //ovdje nisma uklanjao specijalne znakove u "to" jer je javljao gešku
@@ -79,10 +88,13 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.replace_special_arg(&self.clipboard);
         Ok(())
     }
-    
+  
     fn replace_special_arg(&self, value: &'b str) -> String {
         let mut value = value.replace(constants::SPECIAL_SPACE, self.str_space);
         value = value.replace(constants::SPECIAL_EMPTY, self.str_empty);
+        value = value.replace(constants::SPECIAL_NEW_LINE, self.str_new_line);
+        value = value.replace(constants::SPECIAL_RETURN, self.str_return);
+        value = value.replace(constants::SPECIAL_TAB, self.str_tab);
         value      
     }
 
@@ -106,7 +118,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     } 
 
-
+    // kreira tag string u obliku tag|TAG
     fn re_tag(tag: &str) -> String {
         if tag.len() > 0 {
             tag.to_lowercase() + "|" + &tag.to_uppercase()
@@ -116,16 +128,17 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
 
     fn remove_tag(&mut self, tag: &'a str) -> Result<(), Error> {
+        // "</?(tag|TAG).*?>
         let re_string = "</?(".to_string() + &Replace::re_tag(tag)+ ").*?>";
         println!("{:?}", re_string);
         let re = try!(Regex::new(&re_string));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
-
     }
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
-        let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
+        //let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
+        let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>[\n\r]*";
         let re = try!(Regex::new(re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
@@ -145,9 +158,24 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     }
 
-    pub fn replace_openning_tag(tag: &str, replace: &str) {}
+    fn change_tag(&mut self, tag_from: &'a str, tag_to: &'a str) {   
+        let from_open = "<".to_string() + tag_from;
+        let to_open = "<".to_string() + tag_to;
+        self.clipboard = self.clipboard.replace(&from_open, &to_open);
+        let from_close = "</".to_string() + tag_from;
+        let to_close = "</".to_string() + tag_to;
+        self.clipboard = self.clipboard.replace(&from_close, &to_close);
+    }
 
-    pub fn replace_closing_tag(tag: &str, replace: &str) {}
+    fn create_links(&mut self, target: &'a str) -> Result<(), Error> {
+        let re_str = r"(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?";
+        Ok(())
+    }
+
+    fn create_emails(&mut self) -> Result<(), Error> {
+        let re_str = r"[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
+        Ok(())
+    }
 
     pub fn set_attribute(tag: &str, attribute: &str, value: &str) {}
 
