@@ -65,6 +65,10 @@ impl<'a, 'b> Replace<'a, 'b> {
                 "-rt" => try!(self.remove_tag(argument.1[0])),
                 // Mjenja jedan tag u drugi
                 "-ct" => self.change_tag(argument.1[0], argument.1[1]),
+                // radi uri linkove
+                "-ml" => try!(self.make_links(argument.1[0])),
+                // radi email linkove
+                "-me" => try!(self.make_emails()),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
@@ -138,7 +142,7 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
         //let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
-        let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>[\n\r]*";
+        let re_str = r"<(p|h1|h2|div).*?>[&nbsp;\s]*?</(p|h1|h2|div)>[\n\r]*";
         let re = try!(Regex::new(re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
@@ -167,13 +171,36 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.clipboard.replace(&from_close, &to_close);
     }
 
-    fn create_links(&mut self, target: &'a str) -> Result<(), Error> {
-        let re_str = r"(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?";
+    fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
+        let ref target = if target.len() > 0 {
+            " target=\"".to_string() + target + "\""
+        } else {
+            target.to_string()
+        };
+        let re_str = r"(http|ftp|https)://[\w-_]+(\.[\w-_]+)+([\w-\.,@?^=%&amp;:/~\+#]*[\w-@?^=%&amp;/~\+#])?";
+        let re = try!(Regex::new(re_str));
+        for capture in re.captures_iter(&self.clipboard.clone()) {
+            let from = capture.at(0).unwrap();
+            // replace je napravljen zbog više linkova sa istom adresom
+            let ref from_mod = from.replace(".", "[~DOT~]");
+            let to = "<a href=\"".to_string() + from_mod + "\"" + target +">" + from_mod + "</a>";
+            self.clipboard = self.clipboard.replace(from, &to);
+        }
+        self.clipboard = self.clipboard.replace("[~DOT~]", ".");
         Ok(())
     }
 
-    fn create_emails(&mut self) -> Result<(), Error> {
-        let re_str = r"[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
+    fn make_emails(&mut self) -> Result<(), Error> {
+        let re_str = r"[A-Za-z0-9](([_\.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
+        let re = try!(Regex::new(re_str));
+        for capture in re.captures_iter(&self.clipboard.clone()) {
+            let from = capture.at(0).unwrap();
+            // replace je napravljen zbog više emailova sa istom adresom
+            let ref from_mod = from.replace("@", "[~AT~]");
+            let to = "<a href=\"mailto:".to_string() + from_mod + "\">" + from_mod + "</a>";
+            self.clipboard = self.clipboard.replace(from, &to);
+        }
+        self.clipboard = self.clipboard.replace("[~AT~]", "@");
         Ok(())
     }
 

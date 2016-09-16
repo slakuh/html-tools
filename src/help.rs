@@ -42,6 +42,17 @@ pub const HELP: &'static str = "
 
     -ct (change tag)
       Mjenja jedan tag u drugi.
-        upotreba: -ct::from::to, -ct::div::p
+        upotreba: -ct::from::to, 
+                  -ct::div::p
+
+    -ml (make link)
+      Radi URI linkove.      
+        upotreba: -ml::target   //_blank, _self ...
+                  -ml::         //link će biti bez targeta
+
+    -me (make emails)
+      Radi email linkove.
+        upotreba: -me
+
 
 ";
