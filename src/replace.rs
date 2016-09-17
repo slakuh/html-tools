@@ -69,6 +69,8 @@ impl<'a, 'b> Replace<'a, 'b> {
                 "-ml" => try!(self.make_links(argument.1[0])),
                 // radi email linkove
                 "-me" => try!(self.make_emails()),
+                // dodaje atribut tagu ili mijenja vrijednost postojećem atributu
+                "-sa" => try!(self.set_attribute(argument.1[0], argument.1[1], argument.1[2])),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name),
             };
@@ -204,9 +206,38 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     }
 
-    pub fn set_attribute(tag: &str, attribute: &str, value: &str) {}
+    fn set_attribute(&mut self, tag: &str, attribute: &str, value: &str) -> Result<(), Error>{
+        let ref re_str_tag = "<(".to_string() + &Replace::re_tag(tag) + r").*?>";
+        let re_tag = try!(Regex::new(re_str_tag));
+
+        let ref re_str_attr = "(".to_string() + &Replace::re_tag(attribute) + ")\\s*?=\\s*?\".+?\"";
+        let re_attr = try!(Regex::new(re_str_attr));
+
+        for capture in re_tag.captures_iter(&self.clipboard.clone()) {
+            let tag = capture.at(0).unwrap();
+            // println!("[TAG] {}", tag);
+            let tag_new = self.tag_new(tag, attribute, value, &re_attr);        
+            self.clipboard = self.replace_special_arg(&self.clipboard.replace(tag, &tag_new));
+        }
+        Ok(())
+    }
+
+    fn tag_new(&self, tag: &str, attribute_name: &str, attribute_value: &str, re_attribute: &Regex) -> String {
+        let attribute_new = " ".to_string() + attribute_name+ "=\"" + attribute_value + "\"";
+        let mut tag_new;
+        if tag.contains(&attribute_name.to_lowercase()) || tag.contains(&attribute_name.to_uppercase()) {
+            let attribute_old = re_attribute.captures(tag).unwrap().at(0).unwrap();    
+            tag_new = tag.replace(attribute_old, &attribute_new);
+        } else {
+            tag_new= tag.replace(">", &(attribute_new + ">"));
+        }      
+        while tag_new.contains("  ") {
+            tag_new = tag_new.replace("  ", " ");
+        }
+        tag_new  
+    }
+
+    fn parse_style_values(){}
 
     pub fn remove_attribute(tag: &str, attribute: &str) {}
-
-    pub fn change_attribute_value(tag: &str, attribute: &str, value: &str) {}
 }

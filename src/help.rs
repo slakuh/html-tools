@@ -54,5 +54,8 @@ pub const HELP: &'static str = "
       Radi email linkove.
         upotreba: -me
 
-
+    -sa (set attribute)
+      Dodaje atribut ili mijenja vrijednost postojećem atributu
+        upotreba: -sa::tag::attribute::value
+                  -sa::a::target::_blank
 ";
