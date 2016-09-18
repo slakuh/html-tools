@@ -72,7 +72,7 @@ impl<'a, 'b> Replace<'a, 'b> {
                 // dodaje atribut tagu ili mijenja vrijednost postojećem atributu
                 "-sa" => try!(self.set_attribute(argument.1[0], argument.1[1], argument.1[2])),
                 "-help" => print!("{}", help::HELP),
-                _ => println!("Unsupported argument {}", function_name),
+                _ => println!("Unsupported argument {}", function_name), 
             };
         }        
         Ok(())
@@ -132,10 +132,10 @@ impl<'a, 'b> Replace<'a, 'b> {
             String::new()
         }
     }
-
+    // TODO: dodati u regex [/n/r]*
     fn remove_tag(&mut self, tag: &'a str) -> Result<(), Error> {
         // "</?(tag|TAG).*?>
-        let re_string = "</?(".to_string() + &Replace::re_tag(tag)+ ").*?>";
+        let re_string = "</?(".to_string() + &Replace::re_tag(tag)+ ").*?>[\\s\\n\\r]*";
         println!("{:?}", re_string);
         let re = try!(Regex::new(&re_string));
         self.clipboard = re.replace_all(&self.clipboard, "");
@@ -144,7 +144,7 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     fn remove_empty_tags(&mut self)  -> Result<(), Error> {
         //let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
-        let re_str = r"<(p|h1|h2|div).*?>[&nbsp;\s]*?</(p|h1|h2|div)>[\n\r]*";
+        let re_str = r"<(p|h1|h2|div).*?>[&nbsp;\s]*?</(p|h1|h2|div)>[\s\n\r]*";
         let re = try!(Regex::new(re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
@@ -215,7 +215,6 @@ impl<'a, 'b> Replace<'a, 'b> {
 
         for capture in re_tag.captures_iter(&self.clipboard.clone()) {
             let tag = capture.at(0).unwrap();
-            // println!("[TAG] {}", tag);
             let tag_new = self.tag_new(tag, attribute, value, &re_attr);        
             self.clipboard = self.replace_special_arg(&self.clipboard.replace(tag, &tag_new));
         }
@@ -223,14 +222,17 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
 
     fn tag_new(&self, tag: &str, attribute_name: &str, attribute_value: &str, re_attribute: &Regex) -> String {
+        //  razmak je na početku da se kod čistog taga izbjegne spojen tag sa atributom
         let attribute_new = " ".to_string() + attribute_name+ "=\"" + attribute_value + "\"";
         let mut tag_new;
+        
         if tag.contains(&attribute_name.to_lowercase()) || tag.contains(&attribute_name.to_uppercase()) {
             let attribute_old = re_attribute.captures(tag).unwrap().at(0).unwrap();    
             tag_new = tag.replace(attribute_old, &attribute_new);
         } else {
-            tag_new= tag.replace(">", &(attribute_new + ">"));
-        }      
+            tag_new = tag.replace(">", &(attribute_new + ">"));
+        }
+
         while tag_new.contains("  ") {
             tag_new = tag_new.replace("  ", " ");
         }
@@ -239,5 +241,5 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     fn parse_style_values(){}
 
-    pub fn remove_attribute(tag: &str, attribute: &str) {}
+    pub fn remove_tag_attributes(&mut self, tag: &str) {}
 }
