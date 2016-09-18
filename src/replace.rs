@@ -179,7 +179,8 @@ impl<'a, 'b> Replace<'a, 'b> {
         } else {
             target.to_string()
         };
-        let re_str = r"(http|ftp|https)://[\w-_]+(\.[\w-_]+)+([\w-\.,@?^=%&amp;:/~\+#]*[\w-@?^=%&amp;/~\+#])?";
+        //let re_str = r"(http|ftp|https)://[\w-_]+(\.[\w-_]+)+([\w-\.,@?^=%&amp;:/~\+#]*[\w-@?^=%&amp;/~\+#])?";
+        let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*"; // https://mathiasbynens.be/demo/url-regex @stephenhay
         let re = try!(Regex::new(re_str));
         for capture in re.captures_iter(&self.clipboard.clone()) {
             let from = capture.at(0).unwrap();
@@ -193,7 +194,8 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
 
     fn make_emails(&mut self) -> Result<(), Error> {
-        let re_str = r"[A-Za-z0-9](([_\.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
+        //let re_str = r"[A-Za-z0-9](([_\.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
+        let re_str = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"; // http://emailregex.com/ @python
         let re = try!(Regex::new(re_str));
         for capture in re.captures_iter(&self.clipboard.clone()) {
             let from = capture.at(0).unwrap();

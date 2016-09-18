@@ -8,7 +8,7 @@ pub const HELP: &'static str = "
       return,        [RETURN]
       tab,           [TAB]
 
-- funkcije --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+- funkcije --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     -pbr (p to br)
       Zamjenjuje p tag sa br tagom.
     --- upotreba: -pbr
