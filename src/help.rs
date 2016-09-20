@@ -41,7 +41,7 @@ pub const HELP: &'static str = "
     --- upotreba: -rt::tag
 
     -ct (change tag)
-      Mjenja jedan tag u drugi.
+      Mijenja jedan tag u drugi.
     --- upotreba: -ct::from::to, 
                   -ct::div::p
 
