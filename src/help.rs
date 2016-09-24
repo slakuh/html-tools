@@ -25,7 +25,12 @@ pub const HELP: &'static str = "
     -rre (replace regex)
       Zamjenjuje string koji odgovara regularnom izrazu.
       Paziti na specijalne znakove.
+      Mogu se korisiti izrazi za captured groups $0, $1, $2...
+        11-22-333-4444
     --- upotreba: -rre::regex::to
+                  -rre::(\\d+)-(\\d+)-(\\d+)-(\\d+)::$4-$3-$2-$1
+                          $1     $2     $3     $4, dok je $0 čitav regex
+                        iz 11-22-333-4444 u 4444-333-22-11
 
     -rd (remove double)
       Zamjenjuje ponavljajuće/višestruke znakove.
@@ -58,5 +63,5 @@ pub const HELP: &'static str = "
       Dodaje atribut ili mijenja vrijednost postojećem atributu
     --- upotreba: -sa::tag::attribute::value
                   -sa::a::target::_blank
-                  -sa::span::style::   // napravit će prazan atribut style=\"\"
+                  -sa::span::style::   // napravit će prazan atribut style = \"\"
 ";

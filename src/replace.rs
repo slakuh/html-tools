@@ -1,6 +1,6 @@
 use constants;
 use help;
-use regex::{Error, Regex};
+use regex::{Error, Captures, Regex};
 
 #[derive(Debug)]
 pub struct Replace<'a, 'b> {
@@ -94,7 +94,53 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.replace_special_arg(&self.clipboard);
         Ok(())
     }
-  
+/*
+    fn replace_string_regex_2(&mut self, regex: &'a str, to: &'a str) -> Result<(), Error> {
+        let regex = self.replace_special_arg(regex);
+        let re = try!(Regex::new(&regex));
+        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
+        if try!(self.is_supstitute(to)) {
+            for captures in re.captures_iter(&self.clipboard) {
+                let from = captures.at(0).unwrap();
+                let to = self.replace_supstitute(captures, to);
+                unique.push((from.to_string(), to));
+            }
+
+            for item in unique.vec {
+                self.clipboard = self.clipboard.replace(&item.0, &item.1);
+            }
+
+        } else {
+            //ovdje nisma uklanjao specijalne znakove u "to" jer je javljao gešku            
+            self.clipboard = re.replace_all(&self.clipboard, to);
+            //zato su specialni znakovu uklonjeni ovdje
+            self.clipboard = self.replace_special_arg(&self.clipboard);
+        }
+
+        Ok(())
+    }
+
+    // vraća true ako se u replace stringu nalaze zankovi za supstitute 
+    // [$0],[$1],[$2]...,
+    fn is_supstitute(&self, rep: &str) -> Result<bool, Error> {
+        let re_str = r"\[\$\d+\]"; // regex for [$4]-[$3]-[$2]-[$1]
+        let re = try!(Regex::new(re_str));
+        Ok(re.is_match(rep))
+
+
+    }
+    // koonstruira replace string iz regex capture i supstitte replace
+    fn replace_supstitute(&self, captures: Captures, rep: &str) -> String {
+        let mut rep = rep.to_string();
+        for (i, capture) in captures.iter().enumerate() {
+            let supst = "[$".to_string() + &i.to_string() + "]";
+            rep = rep.replace(&supst,  &capture.unwrap());           
+        }    
+        println!("{}", rep);
+        rep
+
+    }
+  */
     fn replace_special_arg(&self, value: &'b str) -> String {
         let mut value = value.replace(constants::SPECIAL_SPACE, self.str_space);
         value = value.replace(constants::SPECIAL_EMPTY, self.str_empty);
@@ -132,7 +178,7 @@ impl<'a, 'b> Replace<'a, 'b> {
             String::new()
         }
     }
-    // TODO: dodati u regex [/n/r]*
+
     fn remove_tag(&mut self, tag: &'a str) -> Result<(), Error> {
         // "</?(tag|TAG).*?>
         let re_string = "</?(".to_string() + &Replace::re_tag(tag)+ ").*?>[\\s\\n\\r]*";
@@ -172,7 +218,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         let to_close = "</".to_string() + tag_to;
         self.clipboard = self.clipboard.replace(&from_close, &to_close);
     }
-
+/*
     fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
         let ref target = if target.len() > 0 {
             " target=\"".to_string() + target + "\""
@@ -182,6 +228,8 @@ impl<'a, 'b> Replace<'a, 'b> {
         //let re_str = r"(http|ftp|https)://[\w-_]+(\.[\w-_]+)+([\w-\.,@?^=%&amp;:/~\+#]*[\w-@?^=%&amp;/~\+#])?";
         let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*"; // https://mathiasbynens.be/demo/url-regex @stephenhay
         let re = try!(Regex::new(re_str));
+        // vektor sa jedinstvenim vrijednostima za replace
+        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
         for capture in re.captures_iter(&self.clipboard.clone()) {
             let from = capture.at(0).unwrap();
             // replace je napravljen zbog više linkova sa istom adresom
@@ -207,6 +255,46 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.clipboard.replace("[~AT~]", "@");
         Ok(())
     }
+*/    
+    
+    fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
+        let ref target = if target.len() > 0 {
+            " target=\"".to_string() + target + "\""
+        } else {
+            target.to_string()
+        };
+
+        let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*"; // https://mathiasbynens.be/demo/url-regex @stephenhay
+        let re = try!(Regex::new(re_str));
+        // vektor sa jedinstvenim vrijednostima za replace
+        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
+
+        for capture in re.captures_iter(&self.clipboard) {
+            let from = capture.at(0).unwrap();
+            let to = "<a href=\"".to_string() + from + "\"" + target +">" + from + "</a>";        
+            unique.push((from.to_string(), to));
+        }
+        for item in &unique.vec {
+            self.clipboard = self.clipboard.replace(&item.0, &item.1);
+        }
+        Ok(())
+    }
+    
+    fn make_emails(&mut self) -> Result<(), Error> {        
+        let re_str = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"; // http://emailregex.com/ @python
+        let re = try!(Regex::new(re_str));
+        // vektor sa jedinstvenim vrijednostima za replace
+        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
+        for capture in re.captures_iter(&self.clipboard) {
+            let from = capture.at(0).unwrap();
+            let to = "<a href=\"mailto:".to_string() + from + "\">" + from + "</a>";
+            unique.push((from.to_string(), to));
+        }        
+        for item in &unique.vec {
+            self.clipboard = self.clipboard.replace(&item.0, &item.1);
+        }
+        Ok(())
+    }
 
     fn set_attribute(&mut self, tag: &str, attribute: &str, value: &str) -> Result<(), Error>{
         let ref re_str_tag = "<(".to_string() + &Replace::re_tag(tag) + r").*?>";
@@ -225,7 +313,7 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     fn tag_new(&self, tag: &str, attribute_name: &str, attribute_value: &str, re_attribute: &Regex) -> String {
         //  razmak je na početku da se kod čistog taga izbjegne spojen tag sa atributom
-        let attribute_new = " ".to_string() + attribute_name+ "=\"" + attribute_value + "\"";
+        let attribute_new = " ".to_string() + attribute_name + "=\"" + attribute_value + "\"";
         let mut tag_new;
         
         if tag.contains(&attribute_name.to_lowercase()) || tag.contains(&attribute_name.to_uppercase()) {
@@ -245,3 +333,35 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     pub fn remove_tag_attributes(&mut self, tag: &str) {}
 }
+
+#[derive(Debug)]
+struct UniqueVec<T> {
+    pub vec: Vec<T>,
+    //index: usize
+}
+
+impl<T: PartialEq> UniqueVec<T> {
+    pub fn new() -> UniqueVec<T> {
+        UniqueVec::<T>{vec: Vec::new()}
+    }
+
+    pub fn push(&mut self, item: T) {// where T: std::cmp::PartialEq<T> {
+        if self.vec.contains(&item) {
+            return;
+        }
+        self.vec.push(item);
+    }
+
+    
+}
+/*
+impl<Iterator for UniqueVec<T>  {
+    // we will be counting with usize
+    type Item = T;
+
+    // next() is the only required method
+    fn next(&mut self) -> Option<T> {
+        self.vec.iter().nth(Item)
+    }
+}
+*/
