@@ -84,63 +84,14 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.clipboard.replace(&from, &to);
     }
 
-
     fn replace_string_regex(&mut self, regex: &'a str, to: &'a str) -> Result<(), Error> {
         let regex = self.replace_special_arg(regex);
-        //ovdje nisma uklanjao specijalne znakove u "to" jer je javljao gešku
+        let to = self.replace_special_arg(to);
         let re = try!(Regex::new(&regex));
-        self.clipboard = re.replace_all(&self.clipboard, to);
-        //zato su specialni znakovu uklonjeni ovdje
-        self.clipboard = self.replace_special_arg(&self.clipboard);
-        Ok(())
-    }
-/*
-    fn replace_string_regex_2(&mut self, regex: &'a str, to: &'a str) -> Result<(), Error> {
-        let regex = self.replace_special_arg(regex);
-        let re = try!(Regex::new(&regex));
-        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
-        if try!(self.is_supstitute(to)) {
-            for captures in re.captures_iter(&self.clipboard) {
-                let from = captures.at(0).unwrap();
-                let to = self.replace_supstitute(captures, to);
-                unique.push((from.to_string(), to));
-            }
-
-            for item in unique.vec {
-                self.clipboard = self.clipboard.replace(&item.0, &item.1);
-            }
-
-        } else {
-            //ovdje nisma uklanjao specijalne znakove u "to" jer je javljao gešku            
-            self.clipboard = re.replace_all(&self.clipboard, to);
-            //zato su specialni znakovu uklonjeni ovdje
-            self.clipboard = self.replace_special_arg(&self.clipboard);
-        }
-
+        self.clipboard = re.replace_all(&self.clipboard, &*to);
         Ok(())
     }
 
-    // vraća true ako se u replace stringu nalaze zankovi za supstitute 
-    // [$0],[$1],[$2]...,
-    fn is_supstitute(&self, rep: &str) -> Result<bool, Error> {
-        let re_str = r"\[\$\d+\]"; // regex for [$4]-[$3]-[$2]-[$1]
-        let re = try!(Regex::new(re_str));
-        Ok(re.is_match(rep))
-
-
-    }
-    // koonstruira replace string iz regex capture i supstitte replace
-    fn replace_supstitute(&self, captures: Captures, rep: &str) -> String {
-        let mut rep = rep.to_string();
-        for (i, capture) in captures.iter().enumerate() {
-            let supst = "[$".to_string() + &i.to_string() + "]";
-            rep = rep.replace(&supst,  &capture.unwrap());           
-        }    
-        println!("{}", rep);
-        rep
-
-    }
-  */
     fn replace_special_arg(&self, value: &'b str) -> String {
         let mut value = value.replace(constants::SPECIAL_SPACE, self.str_space);
         value = value.replace(constants::SPECIAL_EMPTY, self.str_empty);
@@ -188,27 +139,31 @@ impl<'a, 'b> Replace<'a, 'b> {
         Ok(())
     }
 
-    fn remove_empty_tags(&mut self)  -> Result<(), Error> {
-        //let re_str = r"<(p|h1|h2|div)>[&nbsp;\s]*?</(p|h1|h2|div)>";
+    fn remove_empty_tags(&mut self)  -> Result<(), Error> {        
         let re_str = r"<(p|h1|h2|div).*?>[&nbsp;\s]*?</(p|h1|h2|div)>[\s\n\r]*";
         let re = try!(Regex::new(re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
     }
 
-    // TODO: moguć višestruki nepotrebni string.replace(), provjeriti  
     fn remove_atributes_all(&mut self) -> Result<(), Error> {
         let re_str = r"<(\w+)\s+.*?>";
         let re = try!(Regex::new(re_str));
-        for capture in re.captures_iter(&self.clipboard.clone()) {
-            let tag = "<".to_string() + capture.at(1).unwrap() + ">";
-            // TODO: moguć višestruki nepotrebni string.replace(),  
-            // jer kad jednom izmijeni onda izmjeni sve, pa ne treba ponovo pokušavati
-            // radi ali nije optimalno
-            self.clipboard = self.clipboard.replace(capture.at(0).unwrap(), &tag);
+
+        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
+
+        for capture in re.captures_iter(&self.clipboard) {
+            let from = capture.at(0).unwrap();
+            let to = "<".to_string() + capture.at(1).unwrap() + ">";     
+            unique.push((from.to_string(), to));
         }
+        for item in &unique.vec {
+            self.clipboard = self.clipboard.replace(&item.0, &item.1);
+        }
+      
         Ok(())
     }
+
 
     fn change_tag(&mut self, tag_from: &'a str, tag_to: &'a str) {   
         let from_open = "<".to_string() + tag_from;
@@ -217,45 +172,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         let from_close = "</".to_string() + tag_from;
         let to_close = "</".to_string() + tag_to;
         self.clipboard = self.clipboard.replace(&from_close, &to_close);
-    }
-/*
-    fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
-        let ref target = if target.len() > 0 {
-            " target=\"".to_string() + target + "\""
-        } else {
-            target.to_string()
-        };
-        //let re_str = r"(http|ftp|https)://[\w-_]+(\.[\w-_]+)+([\w-\.,@?^=%&amp;:/~\+#]*[\w-@?^=%&amp;/~\+#])?";
-        let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*"; // https://mathiasbynens.be/demo/url-regex @stephenhay
-        let re = try!(Regex::new(re_str));
-        // vektor sa jedinstvenim vrijednostima za replace
-        let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
-        for capture in re.captures_iter(&self.clipboard.clone()) {
-            let from = capture.at(0).unwrap();
-            // replace je napravljen zbog više linkova sa istom adresom
-            let ref from_mod = from.replace(".", "[~DOT~]");
-            let to = "<a href=\"".to_string() + from_mod + "\"" + target +">" + from_mod + "</a>";
-            self.clipboard = self.clipboard.replace(from, &to);
-        }
-        self.clipboard = self.clipboard.replace("[~DOT~]", ".");
-        Ok(())
-    }
-
-    fn make_emails(&mut self) -> Result<(), Error> {
-        //let re_str = r"[A-Za-z0-9](([_\.-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})";
-        let re_str = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"; // http://emailregex.com/ @python
-        let re = try!(Regex::new(re_str));
-        for capture in re.captures_iter(&self.clipboard.clone()) {
-            let from = capture.at(0).unwrap();
-            // replace je napravljen zbog više emailova sa istom adresom
-            let ref from_mod = from.replace("@", "[~AT~]");
-            let to = "<a href=\"mailto:".to_string() + from_mod + "\">" + from_mod + "</a>";
-            self.clipboard = self.clipboard.replace(from, &to);
-        }
-        self.clipboard = self.clipboard.replace("[~AT~]", "@");
-        Ok(())
-    }
-*/    
+    }  
     
     fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
         let ref target = if target.len() > 0 {
@@ -340,12 +257,12 @@ struct UniqueVec<T> {
     //index: usize
 }
 
-impl<T: PartialEq> UniqueVec<T> {
+impl<T> UniqueVec<T> {
     pub fn new() -> UniqueVec<T> {
         UniqueVec::<T>{vec: Vec::new()}
     }
 
-    pub fn push(&mut self, item: T) {// where T: std::cmp::PartialEq<T> {
+    pub fn push(&mut self, item: T) where T: PartialEq {
         if self.vec.contains(&item) {
             return;
         }
@@ -354,6 +271,7 @@ impl<T: PartialEq> UniqueVec<T> {
 
     
 }
+
 /*
 impl<Iterator for UniqueVec<T>  {
     // we will be counting with usize
