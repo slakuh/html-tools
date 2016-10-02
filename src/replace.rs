@@ -34,8 +34,7 @@ impl<'a, 'b> Replace<'a, 'b> {
         arguments
     }
 
-    fn parse_argument(arg: &'a str) -> (&str, Vec<&'a str>)  {
-        
+    fn parse_argument(arg: &'a str) -> (&str, Vec<&'a str>)  {        
         let argument_split: Vec<&str> = arg.split(constants::ARG_VAL_SEPARATOR).collect();
         let function_name = argument_split[0];        
         let mut input_values = Vec::new();
@@ -66,11 +65,13 @@ impl<'a, 'b> Replace<'a, 'b> {
                 // Mjenja jedan tag u drugi
                 "-ct" => self.change_tag(argument.1[0], argument.1[1]),
                 // radi uri linkove
-                "-ml" => try!(self.make_links(argument.1[0])),
+                "-ml" => try!(self.make_links()),
                 // radi email linkove
                 "-me" => try!(self.make_emails()),
                 // dodaje atribut tagu ili mijenja vrijednost postojećem atributu
                 "-sa" => try!(self.set_attribute(argument.1[0], argument.1[1], argument.1[2])),
+                // radi anchore u dokumentu
+                "-ma" => try!(self.make_anchors()),
                 "-help" => print!("{}", help::HELP),
                 _ => println!("Unsupported argument {}", function_name), 
             };
@@ -174,21 +175,16 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = self.clipboard.replace(&from_close, &to_close);
     }  
     
-    fn make_links(&mut self, target: &'a str) -> Result<(), Error> {
-        let ref target = if target.len() > 0 {
-            " target=\"".to_string() + target + "\""
-        } else {
-            target.to_string()
-        };
-
-        let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*"; // https://mathiasbynens.be/demo/url-regex @stephenhay
+    fn make_links(&mut self) -> Result<(), Error> {
+        // https://mathiasbynens.be/demo/url-regex @stephenhay
+        let re_str = "(https?|ftp)://[^\\s/$.?#].[^\\s\"]*";
         let re = try!(Regex::new(re_str));
         // vektor sa jedinstvenim vrijednostima za replace
         let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
 
         for capture in re.captures_iter(&self.clipboard) {
             let from = capture.at(0).unwrap();
-            let to = "<a href=\"".to_string() + from + "\"" + target +">" + from + "</a>";        
+            let to = "<a href=\"".to_string() + from + "\">" + from + "</a>";        
             unique.push((from.to_string(), to));
         }
         for item in &unique.vec {
@@ -198,7 +194,8 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
     
     fn make_emails(&mut self) -> Result<(), Error> {        
-        let re_str = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"; // http://emailregex.com/ @python
+        // http://emailregex.com/ @python
+        let re_str = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+";
         let re = try!(Regex::new(re_str));
         // vektor sa jedinstvenim vrijednostima za replace
         let mut unique: UniqueVec<(String, String)> = UniqueVec::new();
@@ -246,10 +243,37 @@ impl<'a, 'b> Replace<'a, 'b> {
         tag_new  
     }
 
+    fn make_anchors(&mut self) -> Result<(), Error> {
+        let mut links = String::from("<ul>\n");
+        // regex za uklanjaje tagova
+        let re_str = "</?.+?/?>";
+        let re = try!(Regex::new(re_str));
+        let mut index = 0usize;
+        for line in self.clipboard.clone().lines() {
+            if line.contains(constants::SPECIAL_ANCHOR) {
+                let link_name = re.replace_all(line, "").trim().to_string();
+                index += 1;
+                let link = format!("<li><a href=\"#a{idx}\">{name}</a></li>\n",
+                            idx = index,
+                            name = link_name.replace(constants::SPECIAL_ANCHOR, "").trim());
+                links.push_str(&link);
+                let line_new_to = format!("<a name=\"a{}\"></a>", index);
+                let line_new = line.replace(constants::SPECIAL_ANCHOR, &line_new_to);
+                self.clipboard = self.clipboard.replace(line, &line_new);
+            }
+        }
+        links.push_str("</ul>\n<hr>\n");
+        self.clipboard = links + &self.clipboard;
+        Ok(())
+    }
+/*
     fn parse_style_values(){}
 
     pub fn remove_tag_attributes(&mut self, tag: &str) {}
+*/    
 }
+
+
 
 #[derive(Debug)]
 struct UniqueVec<T> {

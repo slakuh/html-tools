@@ -52,12 +52,19 @@ pub const HELP: &'static str = "
 
     -ml (make link)
       Radi URI linkove.      
-    --- upotreba: -ml::target   // _blank, _self ...
-                  -ml::         // link će biti bez targeta
+    --- upotreba: -ml
 
     -me (make emails)
       Radi email linkove.
     --- upotreba: -me
+
+    -ma (make anchors)
+      - Linkat će na red u kojem se nalazi znak [:A:] i 
+      pri čemu će tekst u tom redu biti naziv linka.
+      - Najbolje je oznaku [:A:] staviti ispred naslova,
+      pa će sam naslov biti naziv linka, dok će oznaka
+      [:A:] biti zamjenjena sa anchorom/sidrom.
+    --- upotreba: -ma // [:A:]Neki naslov u tekstu
 
     -sa (set attribute)
       Dodaje atribut ili mijenja vrijednost postojećem atributu
