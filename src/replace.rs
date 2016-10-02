@@ -266,14 +266,13 @@ impl<'a, 'b> Replace<'a, 'b> {
         self.clipboard = links + &self.clipboard;
         Ok(())
     }
+
 /*
     fn parse_style_values(){}
 
     pub fn remove_tag_attributes(&mut self, tag: &str) {}
 */    
 }
-
-
 
 #[derive(Debug)]
 struct UniqueVec<T> {
@@ -307,3 +306,4 @@ impl<Iterator for UniqueVec<T>  {
     }
 }
 */
+// novi red    
