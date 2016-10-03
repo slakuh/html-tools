@@ -1,6 +1,6 @@
 use constants;
 use help;
-use regex::{Error, Captures, Regex};
+use regex::{Error, Regex};
 
 #[derive(Debug)]
 pub struct Replace<'a, 'b> {
@@ -249,18 +249,24 @@ impl<'a, 'b> Replace<'a, 'b> {
         let re_str = "</?.+?/?>";
         let re = try!(Regex::new(re_str));
         let mut index = 0usize;
-        for line in self.clipboard.clone().lines() {
+        // da bi izbjegao clipboard clone prilikom iteracije
+        let mut replaces: Vec<(String, String)> = Vec::new();
+        for line in self.clipboard.lines() {
             if line.contains(constants::SPECIAL_ANCHOR) {
-                let link_name = re.replace_all(line, "").trim().to_string();
                 index += 1;
+                let link_name = re.replace_all(line, "").trim().to_string();                
                 let link = format!("<li><a href=\"#a{idx}\">{name}</a></li>\n",
                             idx = index,
                             name = link_name.replace(constants::SPECIAL_ANCHOR, "").trim());
                 links.push_str(&link);
                 let line_new_to = format!("<a name=\"a{}\"></a>", index);
                 let line_new = line.replace(constants::SPECIAL_ANCHOR, &line_new_to);
-                self.clipboard = self.clipboard.replace(line, &line_new);
+                replaces.push((line.to_string(), line_new));                
             }
+        }
+        // da bi izbjegao clipboard clone prilikom iteracije
+        for item in &replaces{
+            self.clipboard = self.clipboard.replace(&item.0, &item.1);
         }
         links.push_str("</ul>\n<hr>\n");
         self.clipboard = links + &self.clipboard;
@@ -306,4 +312,3 @@ impl<Iterator for UniqueVec<T>  {
     }
 }
 */
-// novi red    

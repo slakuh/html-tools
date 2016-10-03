@@ -63,7 +63,7 @@ pub const HELP: &'static str = "
       pri čemu će tekst u tom redu biti naziv linka.
       - Najbolje je oznaku [:A:] staviti ispred naslova,
       pa će sam naslov biti naziv linka, dok će oznaka
-      [:A:] biti zamjenjena sa anchorom/sidrom.
+      [:A:] biti zamijenjena sa anchorom/sidrom.
     --- upotreba: -ma // [:A:]Neki naslov u tekstu
 
     -sa (set attribute)
