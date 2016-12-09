@@ -211,13 +211,11 @@ impl<'a, 'b> Replace<'a, 'b> {
     }
 
     fn set_attribute(&mut self, tag: &str, attribute: &str, value: &str) -> Result<(), Error>{
-        //()
+        // <(tag|TAG).*?>
         let ref re_str_tag = "<(".to_string() + &Replace::re_tag(tag) + r").*?>";
-        println!("{}", re_str_tag);
         let re_tag = try!(Regex::new(re_str_tag));
-        //(atribute|TAG)
+        // (atribute|ATRIBUTE)\s*?=\s*?".*?"
         let ref re_str_attr = "(".to_string() + &Replace::re_tag(attribute) + ")\\s*?=\\s*?\".*?\"";
-        println!("{}", re_str_attr);
         let re_attr = try!(Regex::new(re_str_attr));
 
         for capture in re_tag.captures_iter(&self.clipboard.clone()) {
