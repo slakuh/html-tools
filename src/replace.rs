@@ -144,13 +144,12 @@ impl<'a, 'b> Replace<'a, 'b> {
 
     fn remove_empty_tag(&mut self, tag: &str) -> Result<(), Error> {
         // "<(tag|TAG).*?>[&nbsp;\s]*?</(tag|TAG)>[\s\n\r]*";
-        let re_str = "<(".to_string() + &Replace::re_tag(tag) + ").*?>[&nbsp;\\s]*?</(" +
-                     &Replace::re_tag(tag) + ")>[\\s\\n\\r]*";
+        let re_tag = Replace::re_tag(tag);
+        let re_str = "<(".to_string() + &re_tag + ").*?>[&nbsp;\\s]*?</(" +
+                     &re_tag + ")>[\\s\\n\\r]*";
         let re = try!(Regex::new(&re_str));
         self.clipboard = re.replace_all(&self.clipboard, "");
         Ok(())
-
-        //unimplemented!();
     }
 
     fn remove_empty_tags(&mut self) -> Result<(), Error> {
