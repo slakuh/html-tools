@@ -12,6 +12,10 @@ pub const HELP: &'static str = "
     -pbr (p to br)
       Zamjenjuje p tag sa br tagom.
     --- upotreba: -pbr
+                    
+    -ret (remove empty tag)
+      Uklanja prazan tag, tj. tag bez sadržaja
+    --- upotreba: -ret::p
 
     -rets (remove empty tags) 
       Uklanja prazne tagove (p|h1|h2|div)
